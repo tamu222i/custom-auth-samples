@@ -15,3 +15,5 @@ steps:
       pwd && 
       cd workspace &&
       sudo bash -xe execroot.sh
+
+timeout: 3600s

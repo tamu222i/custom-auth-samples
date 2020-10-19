@@ -27,7 +27,7 @@ const bent = require('bent');
 
 // Firebase Setup
 const admin = require('firebase-admin');
-const serviceAccount = require('./service-account.json');
+const serviceAccount = require('./secret/service-account.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
@@ -255,6 +255,7 @@ function signInFirebaseTemplate(token) {
       };
       var app = firebase.initializeApp(config);
       app.auth().signInWithCustomToken(token).then(function() {
+        window.opener.location.reload();
         window.close();
       });
     </script>`;
