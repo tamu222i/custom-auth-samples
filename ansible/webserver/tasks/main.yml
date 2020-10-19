@@ -10,6 +10,6 @@
 
 - name: install
   shell: |
-    cd /opt/app
+    cd /opt/app/instagram
     ls -al
     npm install
