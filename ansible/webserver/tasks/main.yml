@@ -5,11 +5,11 @@
 - name: copy source
   copy:
     src: ../instagram
-    dest: /opt/app/
-    mode: 0755
+    dest: /opt/app
 
 
 - name: install
   shell: |
     cd /opt/app
+    ls -al
     npm install
