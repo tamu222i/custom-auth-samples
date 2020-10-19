@@ -16,7 +16,7 @@ cd /home/cloud-user/workspace/ansible
 ansible-bender --debug build main.yml 
 
 ### test
-podman run -d -p 80:80 tamu222i:$DOCKER_REPO /usr/bin/node /opt/app/app.js
+podman run -d -p 80:80 tamu222i:$DOCKER_REPO /usr/bin/node /opt/app/instagram/app.js
 pytest -v ../testinfra/test_container.py
 
 
