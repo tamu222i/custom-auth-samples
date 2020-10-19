@@ -22,6 +22,8 @@ const crypto = require('crypto');
 
 // Load config file
 const config = require('./config.json');
+//const request = require('request');
+const bent = require('bent');
 
 // Firebase Setup
 const admin = require('firebase-admin');
@@ -38,8 +40,11 @@ const credentials = {
     secret: config.instagram.clientSecret
   },
   auth: {
-    tokenHost: 'https://api.instagram.com',
-    tokenPath: '/oauth/access_token'
+    //tokenHost: 'https://api.instagram.com',
+    //tokenPath: '/oauth/access_token'
+    tokenHost: 'http://exment-web.tamu222i.com/admin',
+    tokenPath: '/admin/oauth/token',
+    authorizePath: '/admin/oauth/authorize'
   }
 };
 const oauth2 = require('simple-oauth2').create(credentials);
@@ -55,7 +60,8 @@ const OAUTH_CODE_EXCHANGE_PATH = '/instagram-mobile-exchange-code';
 const APP_CUSTOM_SCHEME = 'instagram-sign-in-demo';
 
 // Instagram scopes requested.
-const OAUTH_SCOPES = 'basic';
+//const OAUTH_SCOPES = 'basic';
+const OAUTH_SCOPES = 'me';
 
 // ExpressJS setup
 const app = express();
@@ -103,19 +109,64 @@ app.get(OAUTH_CALLBACK_PATH, (req, res) => {
     redirect_uri: `${req.protocol}://${req.get('host')}${OAUTH_CALLBACK_PATH}`
   }).then(results => {
     console.log('Auth code exchange result received:', results);
+
+
     // We have an Instagram access token and the user identity now.
     const accessToken = results.access_token;
-    const instagramUserID = results.user.id;
-    const profilePic = results.user.profile_picture;
-    const userName = results.user.full_name;
+    getExmentUser(accessToken).then(eu => {
+
+    //const instagramUserID = results.user.id;
+    //const profilePic = results.user.profile_picture;
+    //const userName = results.user.full_name;
+    console.log(333);
+    console.log(eu);
+    console.log(accessToken);
+    const instagramUserID = eu.value.user_code;
+    //const profilePic = results.user.profile_picture;
+    const userName = eu.value.username;
 
     // Create a Firebase account and get the Custom Auth Token.
-    createFirebaseAccount(instagramUserID, userName, profilePic, accessToken).then(firebaseToken => {
+    //createFirebaseAccount(instagramUserID, userName, profilePic, accessToken).then(firebaseToken => {
+    createFirebaseAccount(instagramUserID, userName, accessToken).then(firebaseToken => {
+    console.log(444);
+    console.log(firebaseToken);
       // Serve an HTML page that signs the user in and updates the user profile.
-      res.send(signInFirebaseTemplate(firebaseToken, userName, profilePic, accessToken));
+      //res.send(signInFirebaseTemplate(firebaseToken, userName, profilePic, accessToken));
+      res.send(signInFirebaseTemplate(firebaseToken, userName, accessToken));
+    });
     });
   });
 });
+
+async function getExmentUser(accessToken) {
+//function getExmentUser(accessToken) {
+    var options = {
+      url: 'http://exment-web.tamu222i.com/admin/api/me',
+      json: true,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        //'Accept': 'text/plain',
+        'Authorization': 'Bearer ' + accessToken,
+      }
+    };
+   
+/*
+    var callback = (error, response, body) => {
+      console.log(111);
+      console.log(body);
+      console.log(response.statusCode);
+    }
+*/
+    
+    //const res = await request(options, callback);
+    const getJSON = bent(options.method, 'json');
+    const res = await getJSON(options.url, null, options.headers);
+    console.log(2222);
+    console.log(res);
+
+    return res;
+}
 
 /**
  * Passes the auth code to your Mobile application by redirecting to a custom scheme URL. This serves as a fallback in
@@ -142,7 +193,7 @@ app.get(OAUTH_CODE_EXCHANGE_PATH, (req, res) => {
     createFirebaseAccount(results.user.id, results.user.full_name,
         results.user.profile_picture, firebaseToken).then(firebaseToken => {
       // Send the custom token, access token and profile data as a JSON object.
-      res.send({firebaseToken: );
+      res.send({firebaseToken: firebaseToken});
     });
   });
 });
@@ -155,32 +206,34 @@ app.get(OAUTH_CODE_EXCHANGE_PATH, (req, res) => {
  *
  * @returns {Promise<string>} The Firebase custom auth token in a promise.
  */
-function createFirebaseAccount(instagramID, displayName, photoURL, accessToken) {
+//function createFirebaseAccount(instagramID, displayName, photoURL, accessToken) {
+function createFirebaseAccount(instagramID, displayName, accessToken) {
   // The UID we'll assign to the user.
   const uid = `instagram:${instagramID}`;
 
   // Save the access token to the Firebase Realtime Database.
-  const databaseTask = admin.database().ref(`/instagramAccessToken/${uid}`)
-      .set(accessToken);
+  //const databaseTask = admin.database().ref(`/instagramAccessToken/${uid}`)
+  //    .set(accessToken);
 
   // Create or update the user account.
   const userCreationTask = admin.auth().updateUser(uid, {
     displayName: displayName,
-    photoURL: photoURL
+    //photoURL: photoURL
   }).catch(error => {
     // If user does not exists we create it.
     if (error.code === 'auth/user-not-found') {
       return admin.auth().createUser({
         uid: uid,
         displayName: displayName,
-        photoURL: photoURL
+        //photoURL: photoURL
       });
     }
     throw error;
   });
 
   // Wait for all async task to complete then generate and return a custom auth token.
-  return Promise.all([userCreationTask, databaseTask]).then(() => {
+  //return Promise.all([userCreationTask, databaseTask]).then(() => {
+  return Promise.all([userCreationTask]).then(() => {
     // Create a Firebase custom auth token.
     const token = admin.auth().createCustomToken(uid);
     console.log('Created Custom token for UID "', uid, '" Token:', token);

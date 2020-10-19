@@ -1,9 +1,9 @@
 {
   "instagram": {
-    "clientId": "<YOUR_INSTAGRAM_API_KEY>",
-    "clientSecret": "<YOUR_INSTAGRAM_CLIENT_SECRET>"
+    "clientId": "db824800-0e97-11eb-ad4b-3925d9ac2cac",
+    "clientSecret": "iWZkQE7VKRobC4mvcd0DZ7NQDOXhkM2S0nAlaW1t"
   },
   "firebase": {
-    "apiKey": "<YOUR_FIREBASE_API_KEY>"
+    "apiKey": "AIzaSyB61KXIOD1wJAS7IaajhoNQKY5wTVUPpqw"
   }
 }
