@@ -79,7 +79,8 @@ app.get(OAUTH_REDIRECT_PATH, (req, res) => {
   console.log('Setting state cookie for verification:', state);
   const secureCookie = req.get('host').indexOf('localhost:') !== 0;
   console.log('Need a secure cookie (i.e. not on localhost)?', secureCookie);
-  res.cookie('state', state, {maxAge: 3600000, secure: secureCookie, httpOnly: true});
+  //res.cookie('state', state, {maxAge: 3600000, secure: secureCookie, httpOnly: true});
+  res.cookie('state', state, {maxAge: 3600000, httpOnly: true});
   const redirectUri = oauth2.authorizationCode.authorizeURL({
     redirect_uri: `${req.protocol}://${req.get('host')}${OAUTH_CALLBACK_PATH}`,
     scope: OAUTH_SCOPES,
