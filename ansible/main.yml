@@ -1,0 +1,13 @@
+- name: setting image
+  hosts: all
+  #vars_files:
+  #  - ./host_vars/webserver.yml
+  vars:
+    ansible_bender:
+      base_image: node:14
+      target_image:
+        name: tamu222i:custom-auth
+  roles:
+    - role: webserver
+      #tags: [stop-layering]
+      #

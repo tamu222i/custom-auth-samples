@@ -1,0 +1,15 @@
+---
+- name: mkdir
+  file: path=/opt/app state=directory mode=0755
+
+- name: copy source
+  copy:
+    src: ../instagram
+    dest: /opt/app/
+    mode: 0755
+
+
+- name: install
+  shell: |
+    cd /opt/app
+    npm install
