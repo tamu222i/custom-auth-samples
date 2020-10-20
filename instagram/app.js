@@ -104,6 +104,8 @@ app.get(OAUTH_CALLBACK_PATH, (req, res) => {
     res.status(400).send('State cookie not set or expired. Maybe you took too long to authorize. Please try again.');
   } else if (req.cookies.state !== req.query.state) {
     res.status(400).send('State validation failed');
+  } else if (req.query.error) {
+    res.status(200).send('error' + req.query.error);
   }
   console.log('Received auth code:', req.query.code);
   oauth2.authorizationCode.getToken({
