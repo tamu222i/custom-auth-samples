@@ -61,7 +61,8 @@ const APP_CUSTOM_SCHEME = 'instagram-sign-in-demo';
 
 // Instagram scopes requested.
 //const OAUTH_SCOPES = 'basic';
-const OAUTH_SCOPES = 'me';
+const OAUTH_SCOPES = 'me value_read value_write';
+//const OAUTH_SCOPES = 'table_read';
 
 // ExpressJS setup
 const app = express();
@@ -116,55 +117,57 @@ app.get(OAUTH_CALLBACK_PATH, (req, res) => {
     const accessToken = results.access_token;
     getExmentUser(accessToken).then(eu => {
 
-    //const instagramUserID = results.user.id;
-    //const profilePic = results.user.profile_picture;
-    //const userName = results.user.full_name;
-    console.log(333);
-    console.log(eu);
-    console.log(accessToken);
-    const instagramUserID = eu.value.user_code;
-    //const profilePic = results.user.profile_picture;
-    const userName = eu.value.username;
+      //const instagramUserID = results.user.id;
+      //const profilePic = results.user.profile_picture;
+      //const userName = results.user.full_name;
+      const instagramUserID = eu.value.user_code;
+      //const profilePic = results.user.profile_picture;
+      const userName = eu.value.username;
+      const userEmail = eu.value.email;
 
-    // Create a Firebase account and get the Custom Auth Token.
-    //createFirebaseAccount(instagramUserID, userName, profilePic, accessToken).then(firebaseToken => {
-    createFirebaseAccount(instagramUserID, userName, accessToken).then(firebaseToken => {
-    console.log(444);
-    console.log(firebaseToken);
-      // Serve an HTML page that signs the user in and updates the user profile.
-      //res.send(signInFirebaseTemplate(firebaseToken, userName, profilePic, accessToken));
-      res.send(signInFirebaseTemplate(firebaseToken, userName, accessToken));
-    });
+      // Create a Firebase account and get the Custom Auth Token.
+      //createFirebaseAccount(instagramUserID, userName, profilePic, accessToken).then(firebaseToken => {
+      createFirebaseAccount(instagramUserID, userName, userEmail, accessToken).then(firebaseToken => {
+        // Serve an HTML page that signs the user in and updates the user profile.
+        //res.send(signInFirebaseTemplate(firebaseToken, userName, profilePic, accessToken));
+        res.send(signInFirebaseTemplate(firebaseToken, userName, accessToken));
+      });
     });
   });
 });
 
 async function getExmentUser(accessToken) {
-//function getExmentUser(accessToken) {
+    /*
+    var options = {
+      url: 'http://exment-web.tamu222i.com/admin/api/data/user/7',
+      json: true,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + accessToken,
+      }
+    };
+    const getJSON2 = bent(options.method, 'json');
+    const res2 = await getJSON2(options.url, null, options.headers).catch(e => {
+      console.log(e);
+    });
+    */
+
     var options = {
       url: 'http://exment-web.tamu222i.com/admin/api/me',
       json: true,
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        //'Accept': 'text/plain',
         'Authorization': 'Bearer ' + accessToken,
       }
     };
    
-/*
-    var callback = (error, response, body) => {
-      console.log(111);
-      console.log(body);
-      console.log(response.statusCode);
-    }
-*/
     
-    //const res = await request(options, callback);
     const getJSON = bent(options.method, 'json');
-    const res = await getJSON(options.url, null, options.headers);
-    console.log(2222);
-    console.log(res);
+    const res = await getJSON(options.url, null, options.headers).catch(e => {
+      console.log(e);
+    });
 
     return res;
 }
@@ -208,7 +211,7 @@ app.get(OAUTH_CODE_EXCHANGE_PATH, (req, res) => {
  * @returns {Promise<string>} The Firebase custom auth token in a promise.
  */
 //function createFirebaseAccount(instagramID, displayName, photoURL, accessToken) {
-function createFirebaseAccount(instagramID, displayName, accessToken) {
+function createFirebaseAccount(instagramID, displayName, email, accessToken) {
   // The UID we'll assign to the user.
   const uid = `instagram:${instagramID}`;
 
@@ -219,6 +222,7 @@ function createFirebaseAccount(instagramID, displayName, accessToken) {
   // Create or update the user account.
   const userCreationTask = admin.auth().updateUser(uid, {
     displayName: displayName,
+    email: email,
     //photoURL: photoURL
   }).catch(error => {
     // If user does not exists we create it.
@@ -226,6 +230,7 @@ function createFirebaseAccount(instagramID, displayName, accessToken) {
       return admin.auth().createUser({
         uid: uid,
         displayName: displayName,
+        email: email,
         //photoURL: photoURL
       });
     }
