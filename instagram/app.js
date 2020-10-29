@@ -61,7 +61,7 @@ const APP_CUSTOM_SCHEME = 'instagram-sign-in-demo';
 
 // Instagram scopes requested.
 //const OAUTH_SCOPES = 'basic';
-const OAUTH_SCOPES = 'me value_read value_write';
+const OAUTH_SCOPES = 'me value_read value_write plugin';
 //const OAUTH_SCOPES = 'table_read';
 
 // ExpressJS setup
@@ -122,14 +122,15 @@ app.get(OAUTH_CALLBACK_PATH, (req, res) => {
       //const instagramUserID = results.user.id;
       //const profilePic = results.user.profile_picture;
       //const userName = results.user.full_name;
-      const instagramUserID = eu.value.user_code;
       //const profilePic = results.user.profile_picture;
-      const userName = eu.value.username;
-      const userEmail = eu.value.email;
+      const instagramUserID = eu.base_user.value.user_code;
+      const profilePic = eu.avatar_url;
+      const userName = eu.base_user.value.username;
+      const userEmail = eu.base_user.value.email;
 
       // Create a Firebase account and get the Custom Auth Token.
       //createFirebaseAccount(instagramUserID, userName, profilePic, accessToken).then(firebaseToken => {
-      createFirebaseAccount(instagramUserID, userName, userEmail, accessToken).then(firebaseToken => {
+      createFirebaseAccount(instagramUserID, userName, profilePic, userEmail, accessToken).then(firebaseToken => {
         // Serve an HTML page that signs the user in and updates the user profile.
         //res.send(signInFirebaseTemplate(firebaseToken, userName, profilePic, accessToken));
         res.send(signInFirebaseTemplate(firebaseToken, userName, accessToken));
@@ -156,7 +157,9 @@ async function getExmentUser(accessToken) {
     */
 
     var options = {
-      url: 'http://exment-web.tamu222i.com/admin/api/me',
+      //url: 'http://exment-web.tamu222i.com/admin/api/me',
+      url: 'http://exment-web.tamu222i.com/admin/api/plugins/loginuser/loginuser',
+      //url: 'http://exment-web.tamu222i.com/admin/api/plugins/sampleapi',
       json: true,
       method: 'GET',
       headers: {
@@ -171,6 +174,7 @@ async function getExmentUser(accessToken) {
       console.log(e);
     });
 
+    console.log(res);
     return res;
 }
 
@@ -213,7 +217,7 @@ app.get(OAUTH_CODE_EXCHANGE_PATH, (req, res) => {
  * @returns {Promise<string>} The Firebase custom auth token in a promise.
  */
 //function createFirebaseAccount(instagramID, displayName, photoURL, accessToken) {
-function createFirebaseAccount(instagramID, displayName, email, accessToken) {
+function createFirebaseAccount(instagramID, displayName, photoURL, email, accessToken) {
   // The UID we'll assign to the user.
   const uid = `instagram:${instagramID}`;
 
@@ -225,7 +229,7 @@ function createFirebaseAccount(instagramID, displayName, email, accessToken) {
   const userCreationTask = admin.auth().updateUser(uid, {
     displayName: displayName,
     email: email,
-    //photoURL: photoURL
+    photoURL: photoURL
   }).catch(error => {
     // If user does not exists we create it.
     if (error.code === 'auth/user-not-found') {
@@ -233,7 +237,7 @@ function createFirebaseAccount(instagramID, displayName, email, accessToken) {
         uid: uid,
         displayName: displayName,
         email: email,
-        //photoURL: photoURL
+        photoURL: photoURL
       });
     }
     throw error;
